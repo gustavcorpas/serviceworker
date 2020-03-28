@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+    <title>Serviceworker bug</title>
+  </head>
+  <body>
+    <center>
+      <h1>Service worker bug</h1>
+      <div class="container">
+        <p>It seems that the offline mode in the Developer Console, doesn't work as expected when service workers are set to 'Update on reload'.<br>
+        This includes the Throttling option in the Network tab, as well as Application > Service Workers - 'offline'</p>
+      </div>
+      <h3>cute kitten in grass field</h3>
+      <img src="./res/kitten1.jpg" width="400" alt="">
+      <h3>badass kitten with sunglasses</h3>
+      <img src="./res/kitten2.jpg" width="400" alt="">
+
+    </center>
+
+    <div class="block">
+      <div class="container">
+        <h3>The bug / steps to replicate</h3>
+        <ul>
+          <li>Load the webpage normally (images load fine)</li>
+          <li>In Developer Console > Application > Service Worker, tick 'Offline' </li>
+          <li>Refresh webpage (images now showing the 404-kitten) </li>
+          <li>In Developer Console > Application > Service Worker, also tick 'Update on reload'</li>
+          <li>Refresh webpage (images now showing fine.. what?)</li>
+          <li>Disable 'Update on reload' (images still showing fine.. what?)</li>
+          <li>Disable 'Offline' reload and enable again (images now showing 404-kitten again)</li>
+        </ul>
+        </div>
+    </div>
+
+    <div class="block">
+      <div class="container">
+        <h3>Code for sw.js</h3>
+        <p>This code adds the 404.jpg to the cache, then displays the image upon a failed fetch-request</p>
+        <pre>
+          <code>
+            self.addEventListener('install', event => {
+              event.waitUntil(
+                caches.open('v1').then(cache => {
+                  return cache.addAll(['./res/404.jpg', '/', 'index.html']);
+                })
+              );
+            });
+
+            self.addEventListener('fetch', event => {
+              event.respondWith(
+                caches.match(event.request)
+                  .then(res => {
+                    return res || fetch(event.request);
+                  })
+                  .catch(() => {
+                    return caches.match('./res/404.jpg');
+                  })
+              );
+
+            });
+          </code>
+        </pre>
+      </div>
+
+    </div>
+
+
+    <center>
+      <div class="sweet-credz">
+        <p>Photo by Raoul Droog on Unsplash</p>
+        <p>Photo by AndriyKo Podilnyk on Unsplash</p>
+        <p>Photo by Mikhail Vasilyev on Unsplash</p>
+      </div>
+    </center>
+
+
+
+  </body>
+
+  <script type="text/javascript">
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => {
+          console.log(reg);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  </script>
+
+
+  <style media="screen">
+    *{
+      font-family: 'Nunito', sans-serif;
+      color: #333;
+    }
+    img{
+      display: block;
+      margin: 10px;
+    }
+    center{
+      padding: 50px;
+    }
+    .sweet-credz{
+      margin-top: 100px;
+    }
+    .sweet-credz p{
+      margin: 0px;
+      color: #999;
+    }
+
+    .block{
+      display: flex;
+      justify-content: center;
+    }
+    .container{
+      max-width: 550px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      white-space: -moz-pre-wrap;
+      white-space: -o-pre-wrap;
+      word-wrap: break-word;
+      background-color: #eee;
+      border-radius: 10px;
+    }
+
+    code {
+      font-family: Courier, 'New Courier', monospace;
+      font-size: 12px;
+      background-color: #f8f8f8;
+    }
+
+  </style>
+</html>
