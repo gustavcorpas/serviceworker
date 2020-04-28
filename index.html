@@ -80,6 +80,14 @@
   </body>
 
   <script type="text/javascript">
+    
+    let imgs = document.querySelectorAll('img');
+
+    imgs.forEach((item, i) => {
+      item.src += '?'+Date.now();
+    });
+    
+    
     if('serviceWorker' in navigator){
       navigator.serviceWorker.register('./sw.js')
         .then(reg => {
